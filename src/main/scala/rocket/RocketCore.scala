@@ -502,10 +502,11 @@ class Rocket(tile: RocketTile)(implicit p: Parameters) extends CoreModule()(p)
   } else { (None, None) }
 
   val alu = Module(new ALU)
+  val FI = Module(new FaultInjection)
   alu.io.dw := ex_ctrl.alu_dw
   alu.io.fn := ex_ctrl.alu_fn
   alu.io.in2 := ex_op2.asUInt
-  alu.io.in1 := ex_op1.asUInt
+  alu.io.in1 := Mux(FI.io.randomSel2, ex_op1.asUInt, ex_op1.asUInt ^ FI.io.bitFlipMask)
 
   // multiplier and divider
   val div = Module(new MulDiv(if (pipelinedMul) mulDivParams.copy(mulUnroll = 0) else mulDivParams, width = xLen))
